@@ -1,0 +1,26 @@
+name: Surveillance velo STAR
+
+on:
+  schedule:
+    # Toutes les 15 min (décalé pour éviter le pic de charge des heures rondes).
+    # Dépôt privé : passez à "3,33 * * * *" (toutes les 30 min) pour rester dans le quota gratuit.
+    - cron: "3,18,33,48 * * * *"
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Envoyer une notification de test"
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier la disponibilité
+        run: python3 check_velo.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          WATCH: "3,4"   # 3 = VAE M, 4 = VAE S, 7 = Cargo, 8 = Longtail, 9 = Cargotail
+          TEST: ${{ github.event.inputs.test }}
